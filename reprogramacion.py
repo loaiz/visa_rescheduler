@@ -4,9 +4,11 @@ Created on Tue Nov  7 15:38:17 2023
 
 @author: Yeferson Loaiza
 """
-
+import re
 import time
 import requests
+import locale
+from datetime import datetime, timedelta
 from time import sleep
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -93,6 +95,9 @@ clic('//*[@id="sign_in_form"]/div[3]/label')
 # se da click en el boton del login
 clic('//*[@id="sign_in_form"]/p[1]/input')
 
+
+
+
 # ciclo para validar inicio de sesion exitoso
 cond = True
 contador = 0
@@ -103,6 +108,8 @@ while cond:
         try:
             iterador = driver.find_element(By.XPATH, '//*[@id="header"]/nav/div/div/div[1]/div[2]').text
             if iterador == 'Colombia':
+                citaConsular = driver.find_element(By.XPATH, '/html/body/div[4]/main/div[2]/div[2]/div[1]/div/div/div[2]/p[1]').text
+                citaCas = driver.find_element(By.XPATH, '/html/body/div[4]/main/div[2]/div[2]/div[1]/div/div/div[2]/p[2]').text
                 cond = False
             else:
                 cond = True
@@ -110,8 +117,27 @@ while cond:
             cond = True
     contador +=1
 
-# boton continuar
-# clic('//*[@id="main"]/div[2]/div[2]/div[1]/div/div/div[1]/div[2]/ul/li/a')
+
+
+# regex fechas
+pattern = r"(\d{1,2} \w+, \d{4})"
+
+matchConsular = re.search(pattern, citaConsular).group(1)
+matchCas = re.search(pattern, citaCas).group(1)
+
+
+# formato fechas
+locale.setlocale(locale.LC_TIME, 'es_ES')
+
+dateConsular = datetime.strptime(matchConsular, '%d %B, %Y').strftime('%Y-%m-%d')
+dateCas = datetime.strptime(matchCas, '%d %B, %Y').strftime('%Y-%m-%d')
+
+
+
+
+
+
+
 
 #menu reprogrmar cita
 
@@ -138,14 +164,37 @@ element = driver.find_element("id", "appointments_consulate_appointment_date")
 # Elimina el atributo readonly usando JavaScript
 driver.execute_script("arguments[0].removeAttribute('readonly')", element)
 
-# Envía la fecha al campo
-element.send_keys("2026-08-26")
+# ciclo fechas Consular
 
-# Envía el Enter
-element.send_keys(Keys.ENTER)
+endDateConsular = datetime.strptime(dateConsular, '%Y-%m-%d')
+startDate = datetime.now()
+statusConsular = False
+datesConsular = []
+
+while startDate <= endDateConsular:
+
+    datesConsular.append(startDate.strftime('%Y-%m-%d'))
+    # Envía la fecha al campo
+    # element.send_keys("2026-08-26")
+    element.send_keys(startDate.strftime('%Y-%m-%d'))
+    element.send_keys(Keys.ENTER)
+    elemento = driver.find_element("xpath", '//*[@id="non-consulate-business-day-message"]/small').text
+    if elemento == '':
+        print('exitosamente encontro fecha')
+        statusConsular = True
+        break
+    else:
+        # print(startDate)
+        startDate += timedelta(days=1)
+        element.clear()
+
+
+
+
+
+
 
 # Localizar el elemento por su XPath
-elemento = driver.find_element("xpath", '//*[@id="non-consulate-business-day-message"]/small').text
 
 # clic('/html/body/div[4]/main/div[2]/div[2]/div/section/ul/li[4]/a/h5')
 
