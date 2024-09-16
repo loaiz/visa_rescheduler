@@ -10,7 +10,7 @@ import requests
 from time import sleep
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from browsermobproxy import Server
+# from browsermobproxy import Server
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
@@ -132,6 +132,20 @@ WebDriverWait(driver, 10).until(
     EC.url_to_be("https://ais.usvisa-info.com/es-co/niv/schedule/58108463/appointment")
 )
 
+# Localizar el elemento por su id
+element = driver.find_element("id", "appointments_consulate_appointment_date")
+
+# Elimina el atributo readonly usando JavaScript
+driver.execute_script("arguments[0].removeAttribute('readonly')", element)
+
+# Envía la fecha al campo
+element.send_keys("2026-08-26")
+
+# Envía el Enter
+element.send_keys(Keys.ENTER)
+
+# Localizar el elemento por su XPath
+elemento = driver.find_element("xpath", '//*[@id="non-consulate-business-day-message"]/small').text
 
 # clic('/html/body/div[4]/main/div[2]/div[2]/div/section/ul/li[4]/a/h5')
 
