@@ -20,6 +20,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service as ChromeService
 
+# parametros
 url = 'https://ais.usvisa-info.com/es-co/niv/users/sign_in'
 
 user = 'vivianazapata2679@gmail.com'
@@ -108,6 +109,7 @@ while cond:
         try:
             iterador = driver.find_element(By.XPATH, '//*[@id="header"]/nav/div/div/div[1]/div[2]').text
             if iterador == 'Colombia':
+                time.sleep(1)
                 citaConsular = driver.find_element(By.XPATH, '/html/body/div[4]/main/div[2]/div[2]/div[1]/div/div/div[2]/p[1]').text
                 citaCas = driver.find_element(By.XPATH, '/html/body/div[4]/main/div[2]/div[2]/div[1]/div/div/div[2]/p[2]').text
                 cond = False
@@ -131,12 +133,6 @@ locale.setlocale(locale.LC_TIME, 'es_ES')
 
 dateConsular = datetime.strptime(matchConsular, '%d %B, %Y').strftime('%Y-%m-%d')
 dateCas = datetime.strptime(matchCas, '%d %B, %Y').strftime('%Y-%m-%d')
-
-
-
-
-
-
 
 
 #menu reprogrmar cita
@@ -175,7 +171,7 @@ while startDate <= endDateConsular:
 
     datesConsular.append(startDate.strftime('%Y-%m-%d'))
     # Envía la fecha al campo
-    # element.send_keys("2026-08-26")
+    # element.send_keys("2026-08-24")
     element.send_keys(startDate.strftime('%Y-%m-%d'))
     element.send_keys(Keys.ENTER)
     elemento = driver.find_element("xpath", '//*[@id="non-consulate-business-day-message"]/small').text
@@ -188,7 +184,7 @@ while startDate <= endDateConsular:
         startDate += timedelta(days=1)
         element.clear()
 
-
+clic('//*[@id="appointments_consulate_appointment_time"]')
 
 
 
@@ -200,9 +196,9 @@ while startDate <= endDateConsular:
 
 # clic('/html/body/div[4]/main/div[2]/div[2]/div/section/ul/li[4]/div/div/div[2]/p[2]/a')
 
-yatri_session_cookie = driver.get_cookie('_yatri_session')
-csrf_token_element = driver.find_element(By.XPATH, "//meta[@name='csrf-token']")
-csrf_token = csrf_token_element.get_attribute("content")
+# yatri_session_cookie = driver.get_cookie('_yatri_session')
+# csrf_token_element = driver.find_element(By.XPATH, "//meta[@name='csrf-token']")
+# csrf_token = csrf_token_element.get_attribute("content")
 
 # Accept: application/json, text/javascript, */*; q=0.01
 # Accept-Encoding: gzip, deflate, br, zstd
@@ -222,74 +218,74 @@ csrf_token = csrf_token_element.get_attribute("content")
 # sec-ch-ua-mobile: ?0
 # sec-ch-ua-platform: "Windows"
 
-headers = {
-    "Accept": "application/json, text/javascript, */*; q=0.01",
-    "Accept-Encoding": "gzip, deflate, br, zstd",
-    "Accept-Language": "es-419,es;q=0.9",
-    "Connection": "keep-alive",
-    "DNT": "1",
-    "Host": "ais.usvisa-info.com",
-    "If-None-Match": 'W/"478252f284492e5346acffe243c18bf0"',
-    "Referer": "https://ais.usvisa-info.com/es-co/niv/schedule/58108463/appointment",
-    "Sec-Fetch-Dest": "empty",
-    "Sec-Fetch-Mode": "cors",
-    "Sec-Fetch-Site": "same-origin",
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
-    "X-CSRF-Token": csrf_token,
-    "X-Requested-With": "XMLHttpRequest",
-    "sec-ch-ua": '"Chromium";v="128", "Not;A=Brand";v="24", "Google Chrome";v="128',
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-platform": '"Windows"',
-}
+# headers = {
+#     "Accept": "application/json, text/javascript, */*; q=0.01",
+#     "Accept-Encoding": "gzip, deflate, br, zstd",
+#     "Accept-Language": "es-419,es;q=0.9",
+#     "Connection": "keep-alive",
+#     "DNT": "1",
+#     "Host": "ais.usvisa-info.com",
+#     "If-None-Match": 'W/"478252f284492e5346acffe243c18bf0"',
+#     "Referer": "https://ais.usvisa-info.com/es-co/niv/schedule/58108463/appointment",
+#     "Sec-Fetch-Dest": "empty",
+#     "Sec-Fetch-Mode": "cors",
+#     "Sec-Fetch-Site": "same-origin",
+#     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+#     "X-CSRF-Token": csrf_token,
+#     "X-Requested-With": "XMLHttpRequest",
+#     "sec-ch-ua": '"Chromium";v="128", "Not;A=Brand";v="24", "Google Chrome";v="128',
+#     "sec-ch-ua-mobile": "?0",
+#     "sec-ch-ua-platform": '"Windows"',
+# }
 
-cookies = {
-    '_yatri_session': yatri_session_cookie['value']
-}
+# cookies = {
+#     '_yatri_session': yatri_session_cookie['value']
+# }
 
-sesion = requests.Session()
+# sesion = requests.Session()
 
 # r = sesion.get('https://ais.usvisa-info.com/es-co/niv/schedule/58108463/appointment/address/25', headers=headers, cookies=cookies)
 
-response = sesion.get('https://ais.usvisa-info.com/es-co/niv/schedule/58108463/appointment/days/25.json?appointments[expedite]=false', headers=headers, cookies=cookies)
+# response = sesion.get('https://ais.usvisa-info.com/es-co/niv/schedule/58108463/appointment/days/25.json?appointments[expedite]=false', headers=headers, cookies=cookies)
 
-content = response.text
+# content = response.text
 
 
-urlCalendar = driver.current_url
+# urlCalendar = driver.current_url
 # ---------------------------despues mirar requests
-headers = {
-    "User-Agent": driver.execute_script("return navigator.userAgent;"),
-    "Referer": urlCalendar,
-    "Cookie": "_yatri_session=" + driver.get_cookie("_yatri_session")["value"]
-}
+# headers = {
+#     "User-Agent": driver.execute_script("return navigator.userAgent;"),
+#     "Referer": urlCalendar,
+#     "Cookie": "_yatri_session=" + driver.get_cookie("_yatri_session")["value"]
+# }
 
 
 
 # driver.current_url
 # driver.page_source
 # driver.get(f'https://ais.usvisa-info.com/es-co/niv/schedule/58108463/appointment/days/25.json?appointments[expedite]=false')
-sesion = requests.Session()
+# sesion = requests.Session()
 
-pageSchedule = sesion.get('https://ais.usvisa-info.com/es-co/niv/schedule/58108463/appointment', headers = headers)
+# pageSchedule = sesion.get('https://ais.usvisa-info.com/es-co/niv/schedule/58108463/appointment', headers = headers)
 
-soup = BeautifulSoup(pageSchedule.text, 'html.parser')
+# soup = BeautifulSoup(pageSchedule.text, 'html.parser')
 
-meta_tag = soup.find('meta', {'name': 'csrf-token'})
-csrf_token = meta_tag.get('content')
+# meta_tag = soup.find('meta', {'name': 'csrf-token'})
+# csrf_token = meta_tag.get('content')
 
-headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
-    "Referer": pageSchedule.url,
-    "Cookie": "_yatri_session=" + sesion.cookies.get('_yatri_session'),
-    "x-csrf-token": csrf_token
-}
+# headers = {
+#     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+#     "Referer": pageSchedule.url,
+#     "Cookie": "_yatri_session=" + sesion.cookies.get('_yatri_session'),
+#     "x-csrf-token": csrf_token
+# }
 
 # https://ais.usvisa-info.com/es-co/niv/schedule/58108463/appointment/days/25.json?appointments[expedite]=false
 
 # driver.get()
-dayValidation = sesion.get('https://ais.usvisa-info.com/es-co/niv/schedule/58108463/appointment/address/25', headers = headers)
+# dayValidation = sesion.get('https://ais.usvisa-info.com/es-co/niv/schedule/58108463/appointment/address/25', headers = headers)
 
-days = sesion.get('https://ais.usvisa-info.com/es-co/niv/schedule/58108463/appointment/days/25.json?appointments[expedite]=false',headers = headers)
+# days = sesion.get('https://ais.usvisa-info.com/es-co/niv/schedule/58108463/appointment/days/25.json?appointments[expedite]=false',headers = headers)
 
 # days.text
 
