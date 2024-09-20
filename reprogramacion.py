@@ -25,16 +25,33 @@ url = 'https://ais.usvisa-info.com/es-co/niv/users/sign_in'
 
 user = 'vivianazapata2679@gmail.com'
 password = '3024128781'
+# ruta_extension = r"C:\Users\AMD\Documents\Proyectos\visa_rescheduler\VPN-Gratis-ZenMate-Mejor-Free-VPN-para-Chrome-Chrome-Web-Store.crx"
 
+# Configurar ChromeOptions para cargar la extensión
+
+# C:\Users\AMD\AppData\Local\Google\Chrome\User Data
 
 # Configura las opciones del navegador
 opc = webdriver.ChromeOptions()
 opc.add_argument("--start-maximized")
+# opc.add_argument(r"user-data-dir=C:\Users\AMD\AppData\Local\Google\Chrome\User Data")  # Ruta a los datos del usuario
+# opc.add_extension(ruta_extension)
+# extension_id = "fdcgdnkidjaadafnichfpabhfomcebme"
+# opc.add_argument(f"--load-extension=C:/Users/usuario/AppData/Local/Google/Chrome/User Data/Default/Extensions/{extension_id}")
+
 # opc.add_argument("--window-size=1920x1080")
 opc.add_argument('--ignore-certificate-errors')
-opc.add_argument('--user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"')
+opc.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36')
 opc.add_experimental_option("excludeSwitches", ["enable-automation"])
 opc.add_argument("disable-infobars")
+# opc.add_argument("disable-gpu")
+
+opc.add_argument("--disable-blink-features=AutomationControlled")
+
+# Desactivar sandbox y especificar puerto de DevTools
+# opc.add_argument("--no-sandbox")
+# opc.add_argument("--remote-debugging-port=0")  # O usa 9222 si es necesario
+
 opc.add_experimental_option('useAutomationExtension', False)
 prefs = {'download.default_directory': r"C:\Users\Yeferson Loaiza\OneDrive\Documentos\Poliseguros\DocumentosSura", "download.prompt_for_download": False, "safebrowsing_for_trusted_sources_enabled": False}
 opc.add_experimental_option('prefs', prefs)
@@ -44,7 +61,7 @@ driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install())
 
 
 # Habilitar la interceptación de red
-driver.execute_cdp_cmd('Network.enable', {})
+# driver.execute_cdp_cmd('Network.enable', {})
 
 def LimpiarCampos(xpath):
     WebDriverWait(driver, 10)\
@@ -80,6 +97,9 @@ def sCheck(driver1,xpath):
     driver1.find_element_by_xpath(xpath).click()
     time.sleep(5)
  
+# driver.implicitly_wait(10)  # Espera implícita para que los elementos carguen
+
+# driver.get("chrome-extension://fdcgdnkidjaadafnichfpabhfomcebme/popup.html")
     
 # se conecta a la pagina de citas de la visa
 driver.get(url)
@@ -136,7 +156,7 @@ dateCas = datetime.strptime(matchCas, '%d %B, %Y').strftime('%Y-%m-%d')
 
 
 #menu reprogrmar cita
-
+time.sleep(1)
 continue_link = WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), 'Continuar')]"))
         )
@@ -154,41 +174,100 @@ WebDriverWait(driver, 10).until(
     EC.url_to_be("https://ais.usvisa-info.com/es-co/niv/schedule/58108463/appointment")
 )
 
-# Localizar el elemento por su id
-element = driver.find_element("id", "appointments_consulate_appointment_date")
 
-# Elimina el atributo readonly usando JavaScript
-driver.execute_script("arguments[0].removeAttribute('readonly')", element)
 
+statusDate = True
 # ciclo fechas Consular
+time.sleep(2)
+while statusDate:
+    time.sleep(2)
+    try:
+        endDateConsular = datetime.strptime(dateConsular, '%Y-%m-%d')
+        startDate = datetime.now()
+        statusConsular = False
+        datesConsular = []
+        # Localizar el elemento por su id
+        element = driver.find_element("id", "appointments_consulate_appointment_date")
 
-endDateConsular = datetime.strptime(dateConsular, '%Y-%m-%d')
-startDate = datetime.now()
-statusConsular = False
-datesConsular = []
-
-while startDate <= endDateConsular:
-
-    datesConsular.append(startDate.strftime('%Y-%m-%d'))
-    # Envía la fecha al campo
-    # element.send_keys("2026-08-24")
-    element.send_keys(startDate.strftime('%Y-%m-%d'))
-    element.send_keys(Keys.ENTER)
-    elemento = driver.find_element("xpath", '//*[@id="non-consulate-business-day-message"]/small').text
-    if elemento == '':
-        print('exitosamente encontro fecha')
-        statusConsular = True
-        break
-    else:
-        # print(startDate)
-        startDate += timedelta(days=1)
-        element.clear()
-
-clic('//*[@id="appointments_consulate_appointment_time"]')
-
-
-
-
+        # Elimina el atributo readonly usando JavaScript
+        driver.execute_script("arguments[0].removeAttribute('readonly')", element)
+        while startDate <= endDateConsular:
+        
+            datesConsular.append(startDate.strftime('%Y-%m-%d'))
+            # Envía la fecha al campo
+            # element.send_keys("2026-08-31")
+            element.send_keys(startDate.strftime('%Y-%m-%d'))
+            element.send_keys(Keys.ENTER)
+            elemento = driver.find_element("xpath", '//*[@id="non-consulate-business-day-message"]/small').text
+            if elemento == '':
+                print('exitosamente encontro fecha')
+                statusConsular = True
+                break
+            else:
+                # print(startDate)
+                startDate += timedelta(days=1)
+                element.clear()
+        
+        # element.click()
+        # clic('/html/body/div[4]/main/div[4]/div/div/form/fieldset[1]/ol/fieldset/legend')
+        
+        clic('//*[@id="appointments_consulate_appointment_time"]')
+        
+        
+        try:
+            clic('/html/body/div[4]/main/div[4]/div/div/form/fieldset[1]/ol/fieldset/div/div[1]/div[3]/li[2]/select/option[2]')
+            pass
+        except Exception:
+            pass
+        
+        
+        # Localizar el elemento por su id
+        element = driver.find_element("id", "appointments_asc_appointment_date")
+        
+        # Elimina el atributo readonly usando JavaScript
+        driver.execute_script("arguments[0].removeAttribute('readonly')", element)
+        
+        # ciclo fechas Consular
+        
+        clic('//*[@id="appointments_asc_appointment_date"]')
+        
+        # Fecha de inicio en formato string (cadena de texto)
+        # fecha_inicio_str = "2026-08-31"
+        fecha_inicio_str = startDate
+        # Convertir la cadena a un objeto datetime
+        fecha_inicio = datetime.strptime(fecha_inicio_str, '%Y-%m-%d')
+        
+        statusCas = False
+        # Iterar 5 días hacia atrás
+        for i in range(6):
+            fecha_actual = fecha_inicio - timedelta(days=i)
+            print(fecha_actual.strftime('%Y-%m-%d'))
+            element.send_keys(fecha_actual.strftime('%Y-%m-%d'))
+            # element.send_keys('2026-08-23')
+            # time.sleep(0.5)
+            element.send_keys(Keys.ENTER)
+            elemento = driver.find_element("xpath", '//*[@id="non-asc-business-day-message"]/small').text
+            if elemento == '':
+                print('exitosamente encontro fecha')
+                statusCas = True
+                break
+            else:
+                element.clear()
+        
+        clic('//*[@id="appointments_asc_appointment_time"]')
+        
+        
+        try:
+            clic('/html/body/div[4]/main/div[4]/div/div/form/fieldset[2]/ol/fieldset/div/div/div[1]/div/div[3]/li/select/option[2]')
+        
+            pass
+        except Exception:
+            pass
+        statusDate = False
+    except:
+        # driver.refresh()
+        statusDate = True
+        time.sleep(2)
 
 # Localizar el elemento por su XPath
 
