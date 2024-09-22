@@ -10,7 +10,7 @@ import requests
 import locale
 from datetime import datetime, timedelta
 from time import sleep
-from bs4 import BeautifulSoup
+# from bs4 import BeautifulSoup
 from selenium import webdriver
 # from browsermobproxy import Server
 from selenium.webdriver.common.by import By
@@ -58,6 +58,7 @@ opc.add_experimental_option('prefs', prefs)
 
 
 driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()),options=opc)
+# driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
 
 
 # Habilitar la interceptación de red
@@ -104,15 +105,16 @@ def sCheck(driver1,xpath):
 # se conecta a la pagina de citas de la visa
 driver.get(url)
 
+time.sleep(1)
 # ingresamos usuario
 typeInXPATH('//*[@id="user_email"]', user)
-
+time.sleep(1)
 # ingresamos contraseña
 typeInXPATH('//*[@id="user_password"]', password)
-
+time.sleep(1)
 # se aceptan terminos y condiciones
 clic('//*[@id="sign_in_form"]/div[3]/label')
-
+time.sleep(1)
 # se da click en el boton del login
 clic('//*[@id="sign_in_form"]/p[1]/input')
 
@@ -174,100 +176,198 @@ WebDriverWait(driver, 10).until(
     EC.url_to_be("https://ais.usvisa-info.com/es-co/niv/schedule/58108463/appointment")
 )
 
+reschedulerVisa = True
 
-
-statusDate = True
-# ciclo fechas Consular
-time.sleep(2)
-while statusDate:
-    time.sleep(2)
+while reschedulerVisa:
+    
+    time.sleep(3)
+    
+    date_input = driver.find_element("id", "appointments_consulate_appointment_date")
+    date_input.click()
+    
+    calendarConsular = True
+    
+    while calendarConsular:
+    
+        available_dates = driver.find_elements(By.XPATH,"//td[not(contains(@class, 'ui-state-disabled'))]//a")
+        
+        if available_dates:
+            # Selecciona la primera fecha disponible
+            available_dates[0].click()
+            
+            calendarConsular = False
+    
+        else:
+            print("No hay fechas disponibles")
+            next_button = driver.find_element(By.XPATH,"//a[@data-handler='next']")
+            next_button.click()
+    
+    dateInputConsular = driver.find_element("id", "appointments_consulate_appointment_date").get_attribute('value')
+    
+    selectedDateConsular = datetime.strptime(dateInputConsular, "%Y-%m-%d").date()
+    comparisonDateConsular = datetime.strptime(dateConsular, "%Y-%m-%d").date()
+    
+    
+    clic('//*[@id="appointments_consulate_appointment_time"]')
     try:
-        endDateConsular = datetime.strptime(dateConsular, '%Y-%m-%d')
-        startDate = datetime.now()
-        statusConsular = False
-        datesConsular = []
-        # Localizar el elemento por su id
-        element = driver.find_element("id", "appointments_consulate_appointment_date")
+        clic('/html/body/div[4]/main/div[4]/div/div/form/fieldset[1]/ol/fieldset/div/div[1]/div[3]/li[2]/select/option[2]')
+        pass
+    except Exception:
+        pass
+           
+    if selectedDateConsular < comparisonDateConsular:
+        print(f"La fecha seleccionada ({selectedDateConsular}) es anterior a {comparisonDateConsular}.")
+        
+        time.sleep(2)
+        date_input = driver.find_element("id", "appointments_asc_appointment_date")
+        date_input.click()
 
-        # Elimina el atributo readonly usando JavaScript
-        driver.execute_script("arguments[0].removeAttribute('readonly')", element)
-        while startDate <= endDateConsular:
-        
-            datesConsular.append(startDate.strftime('%Y-%m-%d'))
-            # Envía la fecha al campo
-            # element.send_keys("2026-08-31")
-            element.send_keys(startDate.strftime('%Y-%m-%d'))
-            element.send_keys(Keys.ENTER)
-            elemento = driver.find_element("xpath", '//*[@id="non-consulate-business-day-message"]/small').text
-            if elemento == '':
-                print('exitosamente encontro fecha')
-                statusConsular = True
-                break
+        calendarCas = True
+
+        while calendarCas:
+
+            available_dates = driver.find_elements(By.XPATH,"//td[not(contains(@class, 'ui-state-disabled'))]//a")
+            
+            if available_dates:
+                # Selecciona la primera fecha disponible
+                available_dates[0].click()
+                
+                calendarCas = False
+
             else:
-                # print(startDate)
-                startDate += timedelta(days=1)
-                element.clear()
-        
-        # element.click()
-        # clic('/html/body/div[4]/main/div[4]/div/div/form/fieldset[1]/ol/fieldset/legend')
-        
-        clic('//*[@id="appointments_consulate_appointment_time"]')
-        
-        
-        try:
-            clic('/html/body/div[4]/main/div[4]/div/div/form/fieldset[1]/ol/fieldset/div/div[1]/div[3]/li[2]/select/option[2]')
-            pass
-        except Exception:
-            pass
-        
-        
-        # Localizar el elemento por su id
-        element = driver.find_element("id", "appointments_asc_appointment_date")
-        
-        # Elimina el atributo readonly usando JavaScript
-        driver.execute_script("arguments[0].removeAttribute('readonly')", element)
-        
-        # ciclo fechas Consular
-        
-        clic('//*[@id="appointments_asc_appointment_date"]')
-        
-        # Fecha de inicio en formato string (cadena de texto)
-        # fecha_inicio_str = "2026-08-31"
-        fecha_inicio_str = startDate
-        # Convertir la cadena a un objeto datetime
-        fecha_inicio = datetime.strptime(fecha_inicio_str, '%Y-%m-%d')
-        
-        statusCas = False
-        # Iterar 5 días hacia atrás
-        for i in range(6):
-            fecha_actual = fecha_inicio - timedelta(days=i)
-            print(fecha_actual.strftime('%Y-%m-%d'))
-            element.send_keys(fecha_actual.strftime('%Y-%m-%d'))
-            # element.send_keys('2026-08-23')
-            # time.sleep(0.5)
-            element.send_keys(Keys.ENTER)
-            elemento = driver.find_element("xpath", '//*[@id="non-asc-business-day-message"]/small').text
-            if elemento == '':
-                print('exitosamente encontro fecha')
-                statusCas = True
-                break
-            else:
-                element.clear()
-        
+                print("No hay fechas disponibles")
+                next_button = driver.find_element(By.XPATH,"//a[@data-handler='next']")
+                next_button.click()
+
+        dateInputCas = driver.find_element("id", "appointments_asc_appointment_date").get_attribute('value')
+
+        selectedDateCas = datetime.strptime(dateInputCas, "%Y-%m-%d").date()
+
         clic('//*[@id="appointments_asc_appointment_time"]')
-        
-        
+
+
         try:
             clic('/html/body/div[4]/main/div[4]/div/div/form/fieldset[2]/ol/fieldset/div/div/div[1]/div/div[3]/li/select/option[2]')
-        
+
             pass
         except Exception:
             pass
-        statusDate = False
-    except:
-        # driver.refresh()
-        statusDate = True
-        time.sleep(2)
+
+        if selectedDateCas < selectedDateConsular:
+            print(f"La fecha seleccionada ({selectedDateConsular}) es anterior a {comparisonDateConsular}.")
+            reschedulerVisa = False
+        else:
+            print(f"La fecha seleccionada ({selectedDateConsular}) NO es anterior a {comparisonDateConsular}.")
+            time.sleep(1)
+            # driver.refresh()
+            
+        # reschedulerVisa = False
+    else:
+        print(f"La fecha seleccionada ({selectedDateConsular}) NO es anterior a {comparisonDateConsular}.")
+        time.sleep(1)
+        
+        # try:
+        #     driver.refresh()
+        #     pass
+        # except Exception:
+        #     driver.refresh()
+        #     pass
+        
+             
+
+
+
+
+         
+
+
+
+
+
+# statusDate = True
+# # ciclo fechas Consular
+# time.sleep(2)
+# while statusDate:
+#     time.sleep(2)
+#     try:
+#         endDateConsular = datetime.strptime(dateConsular, '%Y-%m-%d')
+#         startDate = datetime.now()
+#         statusConsular = False
+#         datesConsular = []
+#         # Localizar el elemento por su id
+#         element = driver.find_element("id", "appointments_consulate_appointment_date")
+
+#         # Elimina el atributo readonly usando JavaScript
+#         driver.execute_script("arguments[0].removeAttribute('readonly')", element)
+#         while startDate <= endDateConsular:
+        
+#             datesConsular.append(startDate.strftime('%Y-%m-%d'))
+#             # Envía la fecha al campo
+#             element.send_keys("2026-08-31")
+#             element.send_keys(startDate.strftime('%Y-%m-%d'))
+#             element.send_keys(Keys.ENTER)
+#             elemento = driver.find_element("xpath", '//*[@id="non-consulate-business-day-message"]/small').text
+#             if elemento == '':
+#                 print('exitosamente encontro fecha')
+#                 statusConsular = True
+#                 break
+#             else:
+#                 # print(startDate)
+#                 startDate += timedelta(days=1)
+#                 element.clear()
+        
+#         # element.click()
+#         # clic('/html/body/div[4]/main/div[4]/div/div/form/fieldset[1]/ol/fieldset/legend')
+        
+
+        
+#         # Localizar el elemento por su id
+#         element = driver.find_element("id", "appointments_asc_appointment_date")
+        
+#         # Elimina el atributo readonly usando JavaScript
+#         driver.execute_script("arguments[0].removeAttribute('readonly')", element)
+        
+#         # ciclo fechas Consular
+        
+#         clic('//*[@id="appointments_asc_appointment_date"]')
+        
+#         # Fecha de inicio en formato string (cadena de texto)
+#         # fecha_inicio_str = "2026-08-31"
+#         fecha_inicio_str = startDate
+#         # Convertir la cadena a un objeto datetime
+#         fecha_inicio = datetime.strptime(fecha_inicio_str, '%Y-%m-%d')
+        
+#         statusCas = False
+#         # Iterar 5 días hacia atrás
+#         for i in range(6):
+#             fecha_actual = fecha_inicio - timedelta(days=i)
+#             print(fecha_actual.strftime('%Y-%m-%d'))
+#             element.send_keys(fecha_actual.strftime('%Y-%m-%d'))
+#             # element.send_keys('2026-08-23')
+#             # time.sleep(0.5)
+#             element.send_keys(Keys.ENTER)
+#             elemento = driver.find_element("xpath", '//*[@id="non-asc-business-day-message"]/small').text
+#             if elemento == '':
+#                 print('exitosamente encontro fecha')
+#                 statusCas = True
+#                 break
+#             else:
+#                 element.clear()
+        
+#         clic('//*[@id="appointments_asc_appointment_time"]')
+        
+        
+#         try:
+#             clic('/html/body/div[4]/main/div[4]/div/div/form/fieldset[2]/ol/fieldset/div/div/div[1]/div/div[3]/li/select/option[2]')
+        
+#             pass
+#         except Exception:
+#             pass
+#         statusDate = False
+#     except:
+#         # driver.refresh()
+#         statusDate = True
+#         time.sleep(2)
 
 # Localizar el elemento por su XPath
 
